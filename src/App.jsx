@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ArrowUpTrayIcon} from "@heroicons/react/24/solid";
+import { CommandLineIcon, SignalIcon } from "@heroicons/react/24/solid";
 
-import ConnectDevice from "../config/bluetooth.js";
+import { ConnectDevice, PP_OPEN } from "../config/bluetooth.js";
 
 function App() {
-  const [status, setStatus] = useState("");
+  const [status, setStatus] = useState("---");
 
   return (
     <>
@@ -15,18 +15,26 @@ function App() {
             Comunicação bluetooth com POS
           </h2>
           <div className="card">
-            <div className="flex justify-center items-center m-2 font-medium">
+            <div className="justify-center items-center m-2 font-medium">
               <button
-                className="bg-blue-600 rounded-lg px-6 py-2 m-1"
+                className="bg-blue-600 rounded-lg px-6 py-1 m-2"
                 onClick={async() => {
                   setStatus(await ConnectDevice());
                 }}>
-                <ArrowUpTrayIcon className="w-6 text-white font-bold" />
+                <SignalIcon className="w-7 text-white" />
               </button>
-              <label>{status}</label>
+            </div>
+            <div className="m-2">
+            Status: <label className={"font-bold " +
+              (status === "conectado" ? "text-green-500" : "text-red-500")
+              }> {status}</label>
             </div>
 
-            
+            <button
+                className="bg-blue-600 rounded-lg px-6 py-2 m-2"
+                onClick={async () => { await PP_OPEN()}}>
+                <CommandLineIcon className="w-6 text-white" />
+              </button>
 
           </div>
           <p className="text-gray-500 font-medium">
