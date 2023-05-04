@@ -1,11 +1,13 @@
 let bluetoothDevice = null;
-let serviceUuid = '00001800-0000-1000-8000-00805f9b34fb'; // Generic Access
-let characteristicUuid = "00002a05-0000-1000-8000-00805f9b34fb"; // Heart Rate Measuremen
+let gattServer = null;
+let commandService = null;
+let serviceUuid = "00001800-0000-1000-8000-00805f9b34fb";
+let characteristicUuid = "0000ffe9-0000-1000-8000-00805f9b34fb";
 let IsConnect = false;
 
 let options = {
-  filters: [ { namePrefix: "PAX" }],
-  optionalServices: [serviceUuid]
+  filters: [{ namePrefix: "PAX" }],
+  optionalServices: [serviceUuid],
 };
 
 export async function ConnectDevice() {
@@ -16,44 +18,49 @@ export async function ConnectDevice() {
       bluetoothDevice = device;
       await Connect();
     })
+    .then(_ => {
+      console.log('> Found GATT server');
+      return gattServer.getPrimaryService(serviceUuid)
+    })
+    .then(async service => {
+      console.log('> Found command service');
+      commandService = service;
+
+      return await commandService.getCharacteristic("00002a00-0000-1000-8000-00805f9b34fb");
+    })
     .catch((err) => console.log(err));
 
-    return IsConnect != false ? "conectado" : "desconectado";
-
+  return IsConnect != false ? "conectado" : "desconectado";
 }
 
 async function Connect() {
-
   console.log("> conectando ao dispositivo bluetooth...");
-  await bluetoothDevice.gatt.connect().then(async(server) => {
+  await bluetoothDevice.gatt.connect().then(async (server) => {
     console.log("> Dispositivo bluetooth conectado.");
-    return IsConnect = true
+    gattServer = server;
+    return IsConnect = true;;
   });
 }
 
 export async function PP_OPEN() {
-
   if (!bluetoothDevice || !bluetoothDevice.gatt.connected) {
     console.log("> Dispositivo bluetooth não conectado.");
     return;
   }
 
   let service = await bluetoothDevice.gatt.getPrimaryService(serviceUuid);
-  let characteristic = await service.getCharacteristic(characteristicUuid);
-  console.log(characteristic);
-  if (!characteristic) {
-    console.log("> Característica não encontrada.");
-    return;
-  }
 
-  let data = [0x01, 0x02, 0x03]
-  let buffer = new Uint8Array(data.length);
-  for (let i = 0; i < data.length; i++) {
-    buffer[i] = data[i];
-  }
-  let ret = await characteristic.writeValue(buffer);
-  console.log(ret);
-  console.log("> Dados enviados com sucesso!");
+
+    let characteristic = await service.getCharacteristic(characteristicUuid[0]);
+    console.log(characteristic);
+  
+
+  services.forEach((service) => {
+    console.log(service.uuid);
+
+    if (service.uuid == serviceUuid) {
+      console.log("Serviço encontrado!");
+      // faça o que precisa ser feito com o serviço
+    }
+  });
 }
-
-
